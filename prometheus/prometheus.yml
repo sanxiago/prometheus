@@ -51,3 +51,9 @@ scrape_configs:
   
     static_configs:
       - targets: ['node-exporter:9100']
+
+  - job_name: 'iptables-exporter'
+    scrape_interval: 60s
+
+    static_configs:
+      - targets: ['iptables_exporter:8017/metrics']    

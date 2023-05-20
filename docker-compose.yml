@@ -106,6 +106,16 @@ services:
       - front-tier
     restart: always
 
+  iptables_exporter:
+    image: sanxiago/iptables-exporter
+    ports:
+      - 8017:8017
+    volumes:
+      - /tmp:/tmp
+    networks:
+      - back-tier
+
+
 #  pushgateway:
 #    image: prom/pushgateway
 #    restart: always
