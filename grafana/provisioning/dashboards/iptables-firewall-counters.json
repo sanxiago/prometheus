@@ -1,0 +1,342 @@
+{
+  "__inputs": [],
+  "__requires": [],
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["iptables", "firewall", "networking"],
+  "templating": { "list": [] },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "iptables Firewall Counters",
+  "uid": "iptables-firewall-counters",
+  "version": 1,
+  "panels": [
+    {
+      "id": 100,
+      "type": "row",
+      "title": "Overview (packets/sec)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Input",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "targets": [
+        {
+          "expr": "sum(rate(iptables_packets{chain=\"INPUT\",destination=\"ufw-before-input\"}[5m]))",
+          "legendFormat": "Input",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Output",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "targets": [
+        {
+          "expr": "sum(rate(iptables_packets{chain=\"OUTPUT\",destination=\"ufw-before-output\"}[5m]))",
+          "legendFormat": "Output",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "blue", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Forward",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "targets": [
+        {
+          "expr": "sum(rate(iptables_packets{chain=\"FORWARD\",destination=\"DOCKER-USER\"}[5m]))",
+          "legendFormat": "Forward",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "purple", "value": null }] }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Drops",
+      "description": "ipset-blacklist DROP + all ufw-reject-{input,forward,output}",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "targets": [
+        {
+          "expr": "sum(rate(iptables_packets{destination=~\"DROP|ufw-reject-.*\"}[5m]))",
+          "legendFormat": "Drops",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 20 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    },
+    {
+      "id": 101,
+      "type": "row",
+      "title": "Chain Traffic Over Time",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Packets/sec by Chain",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 6 },
+      "targets": [
+        {
+          "expr": "sum(rate(iptables_packets{chain=\"INPUT\",destination=\"ufw-before-input\"}[5m]))",
+          "legendFormat": "Input",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(iptables_packets{chain=\"OUTPUT\",destination=\"ufw-before-output\"}[5m]))",
+          "legendFormat": "Output",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(iptables_packets{chain=\"FORWARD\",destination=\"DOCKER-USER\"}[5m]))",
+          "legendFormat": "Forward",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(iptables_packets{destination=~\"DROP|ufw-reject-.*\"}[5m]))",
+          "legendFormat": "Drops",
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "spanNulls": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Drops" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Bytes/sec by Chain",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        {
+          "expr": "sum(rate(iptables_bytes{chain=\"INPUT\",destination=\"ufw-before-input\"}[5m]))",
+          "legendFormat": "Input",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(iptables_bytes{chain=\"OUTPUT\",destination=\"ufw-before-output\"}[5m]))",
+          "legendFormat": "Output",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(iptables_bytes{chain=\"FORWARD\",destination=\"DOCKER-USER\"}[5m]))",
+          "legendFormat": "Forward",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(iptables_bytes{destination=~\"DROP|ufw-reject-.*\"}[5m]))",
+          "legendFormat": "Drops",
+          "refId": "D"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "spanNulls": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Drops" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 102,
+      "type": "row",
+      "title": "Per-Subnet Outbound Traffic (green=.2, kids=.3, smarthome=.4 — guest/.5 has no dedicated NAT rule, not separately tracked)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 15 },
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "Per-Subnet Packets/sec (outbound NAT)",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum by (subnet) (label_replace(label_replace(label_replace(rate(iptables_packets{table=\"nat\",chain=\"POSTROUTING\",destination=\"MASQUERADE\",rule=~\".*192\\\\.168\\\\.[234]\\\\.0/24.*\"}[5m]), \"subnet\", \"green\", \"rule\", \".*192\\\\.168\\\\.2\\\\.0/24.*\"), \"subnet\", \"kids\", \"rule\", \".*192\\\\.168\\\\.3\\\\.0/24.*\"), \"subnet\", \"smarthome\", \"rule\", \".*192\\\\.168\\\\.4\\\\.0/24.*\"))",
+          "legendFormat": "{{subnet}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Per-Subnet Bytes/sec (outbound NAT)",
+      "datasource": "Prometheus",
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum by (subnet) (label_replace(label_replace(label_replace(rate(iptables_bytes{table=\"nat\",chain=\"POSTROUTING\",destination=\"MASQUERADE\",rule=~\".*192\\\\.168\\\\.[234]\\\\.0/24.*\"}[5m]), \"subnet\", \"green\", \"rule\", \".*192\\\\.168\\\\.2\\\\.0/24.*\"), \"subnet\", \"kids\", \"rule\", \".*192\\\\.168\\\\.3\\\\.0/24.*\"), \"subnet\", \"smarthome\", \"rule\", \".*192\\\\.168\\\\.4\\\\.0/24.*\"))",
+          "legendFormat": "{{subnet}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "pointSize": 5,
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "calcs": ["mean", "max", "lastNotNull"] },
+        "tooltip": { "mode": "multi", "sort": "desc" }
+      }
+    }
+  ]
+}
