@@ -48,4 +48,10 @@ scrape_configs:
     scrape_interval: 60s
 
     static_configs:
-      - targets: ['iptables_exporter:8017']    
+      - targets: ['iptables_exporter:8017']
+
+  - job_name: 'smokeping-exporter'
+    scrape_interval: 60s
+
+    static_configs:
+      - targets: ['smokeping_exporter:8018']

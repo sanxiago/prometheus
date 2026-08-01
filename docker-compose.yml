@@ -116,6 +116,16 @@ services:
       - back-tier
     restart: always
 
+  smokeping_exporter:
+    image: sanxiago/smokeping-exporter
+    ports:
+      - 8018:8018
+    volumes:
+      - /root/router/smokeping/data:/data:ro
+    networks:
+      - back-tier
+    restart: always
+
 #  pushgateway:
 #    image: prom/pushgateway
 #    restart: always
