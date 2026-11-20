@@ -1,0 +1,734 @@
+{
+ "annotations": {
+  "list": []
+ },
+ "editable": true,
+ "fiscalYearStartMonth": 0,
+ "graphTooltip": 1,
+ "id": null,
+ "links": [],
+ "liveNow": false,
+ "refresh": "1m",
+ "schemaVersion": 38,
+ "style": "dark",
+ "tags": [
+  "networking",
+  "router",
+  "cake",
+  "conntrack"
+ ],
+ "time": {
+  "from": "now-24h",
+  "to": "now"
+ },
+ "timepicker": {},
+ "timezone": "",
+ "title": "Router Network Activity",
+ "uid": "router-network-activity",
+ "version": 1,
+ "templating": {
+  "list": []
+ },
+ "panels": [
+  {
+   "id": 1,
+   "type": "row",
+   "title": "Overview",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 0
+   },
+   "panels": []
+  },
+  {
+   "id": 2,
+   "type": "stat",
+   "title": "WAN download",
+   "description": "Current receive rate on `wan` (internet \u2192 router), 5-minute average. CAKE shapes `lan` egress at 900 Mbit/s, so sustained values near that mean the shaper is the bottleneck.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 6,
+    "x": 0,
+    "y": 1
+   },
+   "targets": [
+    {
+     "expr": "rate(node_network_receive_bytes_total{device=\"wan\"}[5m]) * 8",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "auto",
+    "justifyMode": "auto",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 3,
+   "type": "stat",
+   "title": "WAN upload",
+   "description": "Current transmit rate on `wan` (router \u2192 internet), 5-minute average. CAKE shapes `wan` egress at 900 Mbit/s.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 6,
+    "x": 6,
+    "y": 1
+   },
+   "targets": [
+    {
+     "expr": "rate(node_network_transmit_bytes_total{device=\"wan\"}[5m]) * 8",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "auto",
+    "justifyMode": "auto",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "Conntrack table used",
+   "description": "Tracked connections as a share of `nf_conntrack_max` (262144). When it reaches 100% the kernel drops new connections. The `conntrack_table_filling` alert fires above 80%. Normal use here is well under 1%.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 6,
+    "x": 12,
+    "y": 1
+   },
+   "targets": [
+    {
+     "expr": "node_nf_conntrack_entries / node_nf_conntrack_entries_limit",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 0.6
+       },
+       {
+        "color": "red",
+        "value": 0.8
+       }
+      ]
+     },
+     "decimals": 2
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "auto",
+    "justifyMode": "auto",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 5,
+   "type": "stat",
+   "title": "CAKE drops (24h)",
+   "description": "Packets CAKE dropped on `wan` + `lan` in the last 24 hours. A few drops are normal: that is the AQM keeping queues short under load. Hundreds per hour while idle would mean the shaper bandwidth is set too low.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 6,
+    "x": 18,
+    "y": 1
+   },
+   "targets": [
+    {
+     "expr": "sum(increase(node_qdisc_drops_total{device=~\"wan|lan\"}[24h]))",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 1000
+       },
+       {
+        "color": "red",
+        "value": 10000
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "auto",
+    "justifyMode": "auto",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 6,
+   "type": "row",
+   "title": "Interface traffic",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 5
+   },
+   "panels": []
+  },
+  {
+   "id": 7,
+   "type": "timeseries",
+   "title": "Throughput (bits/s)",
+   "description": "Traffic per interface, 5-minute rate. **Above zero = received, below zero = transmitted.**\n\n- `wan` receive = internet download, `wan` transmit = upload.\n- `lan` transmit = traffic to LAN clients (mostly downloads), `lan` receive = traffic from them.\n- `wg0` = WireGuard tunnel traffic (already included in `wan` once encrypted).\n\nEverything on one physical `lan` NIC: the four zones (green/kids/smarthome/guest) aren't split here.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 9,
+    "w": 12,
+    "x": 0,
+    "y": 6
+   },
+   "targets": [
+    {
+     "expr": "rate(node_network_receive_bytes_total{device=~\"wan|lan|wg0\"}[5m]) * 8",
+     "legendFormat": "{{device}} rx",
+     "refId": "A"
+    },
+    {
+     "expr": "rate(node_network_transmit_bytes_total{device=~\"wan|lan|wg0\"}[5m]) * 8",
+     "legendFormat": "{{device}} tx",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "pointSize": 4,
+      "spanNulls": true,
+      "showPoints": "never"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".* tx"
+      },
+      "properties": [
+       {
+        "id": "custom.transform",
+        "value": "negative-Y"
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 8,
+   "type": "timeseries",
+   "title": "Packets/s",
+   "description": "Packet rate per interface, 5-minute rate. **Above zero = received, below zero = transmitted.**\n\nCompare with throughput: a packet spike without a matching byte spike means many small packets (DNS floods, scans, VoIP/gaming) rather than downloads.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 9,
+    "w": 12,
+    "x": 12,
+    "y": 6
+   },
+   "targets": [
+    {
+     "expr": "rate(node_network_receive_packets_total{device=~\"wan|lan|wg0\"}[5m])",
+     "legendFormat": "{{device}} rx",
+     "refId": "A"
+    },
+    {
+     "expr": "rate(node_network_transmit_packets_total{device=~\"wan|lan|wg0\"}[5m])",
+     "legendFormat": "{{device}} tx",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "pointSize": 4,
+      "spanNulls": true,
+      "showPoints": "never"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".* tx"
+      },
+      "properties": [
+       {
+        "id": "custom.transform",
+        "value": "negative-Y"
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 9,
+   "type": "timeseries",
+   "title": "NIC errors & drops",
+   "description": "Errors and drops counted by the network driver/kernel at the interface, **before** CAKE. Should be flat at zero.\n\n- `rx errs`: bad frames (CRC errors): suspect the cable, port or ONT/upstream router.\n- `rx drop`: kernel had no room for incoming packets (CPU busy, ring buffer too small).\n- `tx drop`/`tx errs`: rarely non-zero with CAKE in place; CAKE's own drops are in the panel below.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 24,
+    "x": 0,
+    "y": 15
+   },
+   "targets": [
+    {
+     "expr": "rate(node_network_receive_errs_total{device=~\"wan|lan|wg0\"}[5m])",
+     "legendFormat": "{{device}} rx errs",
+     "refId": "A"
+    },
+    {
+     "expr": "rate(node_network_receive_drop_total{device=~\"wan|lan|wg0\"}[5m])",
+     "legendFormat": "{{device}} rx drop",
+     "refId": "B"
+    },
+    {
+     "expr": "rate(node_network_transmit_errs_total{device=~\"wan|lan|wg0\"}[5m])",
+     "legendFormat": "{{device}} tx errs",
+     "refId": "C"
+    },
+    {
+     "expr": "rate(node_network_transmit_drop_total{device=~\"wan|lan|wg0\"}[5m])",
+     "legendFormat": "{{device}} tx drop",
+     "refId": "D"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "pointSize": 4,
+      "spanNulls": true,
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 10,
+   "type": "row",
+   "title": "CAKE traffic shaping",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 23
+   },
+   "panels": []
+  },
+  {
+   "id": 11,
+   "type": "timeseries",
+   "title": "CAKE drops/s",
+   "description": "Packets CAKE deliberately dropped to keep latency low (AQM). Short bursts during big downloads or uploads are expected and healthy: that's CAKE preventing bufferbloat. Sustained drops with low throughput would mean the configured bandwidth is too low for the link.\n\nCAKE only shapes **outgoing** traffic: on `wan` that's uploads, on `lan` it's downloads to clients. Both are set to 900 Mbit/s. Counters reset when the qdisc is re-created (reboot, `tc qdisc replace`).",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 9,
+    "w": 8,
+    "x": 0,
+    "y": 24
+   },
+   "targets": [
+    {
+     "expr": "rate(node_qdisc_drops_total{device=~\"wan|lan\"}[5m])",
+     "legendFormat": "{{device}}",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "pointSize": 4,
+      "spanNulls": true,
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 12,
+   "type": "timeseries",
+   "title": "CAKE overlimits/s",
+   "description": "How often a packet had to wait because sending it would exceed the shaper rate. This shows how hard CAKE is working, not a problem: high values just mean traffic was at the 900 Mbit/s limit and CAKE was pacing it. Near zero means the shaper isn't involved and the link itself sets the pace.\n\nCAKE only shapes **outgoing** traffic: on `wan` that's uploads, on `lan` it's downloads to clients. Both are set to 900 Mbit/s. Counters reset when the qdisc is re-created (reboot, `tc qdisc replace`).",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 9,
+    "w": 8,
+    "x": 8,
+    "y": 24
+   },
+   "targets": [
+    {
+     "expr": "rate(node_qdisc_overlimits_total{device=~\"wan|lan\"}[5m])",
+     "legendFormat": "{{device}}",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "pps",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "pointSize": 4,
+      "spanNulls": true,
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 13,
+   "type": "timeseries",
+   "title": "CAKE queue backlog",
+   "description": "Bytes waiting in CAKE's queue at scrape time (sampled once per scrape, so short bursts can be missed). CAKE targets about 5 ms of queueing; at 900 Mbit/s that is roughly 560 KB. A backlog that stays high means latency is building up on that interface.\n\nCAKE only shapes **outgoing** traffic: on `wan` that's uploads, on `lan` it's downloads to clients. Both are set to 900 Mbit/s. Counters reset when the qdisc is re-created (reboot, `tc qdisc replace`).",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 9,
+    "w": 8,
+    "x": 16,
+    "y": 24
+   },
+   "targets": [
+    {
+     "expr": "node_qdisc_backlog{device=~\"wan|lan\"}",
+     "legendFormat": "{{device}}",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "pointSize": 4,
+      "spanNulls": true,
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 14,
+   "type": "row",
+   "title": "Connection tracking",
+   "collapsed": false,
+   "gridPos": {
+    "h": 1,
+    "w": 24,
+    "x": 0,
+    "y": 33
+   },
+   "panels": []
+  },
+  {
+   "id": 15,
+   "type": "timeseries",
+   "title": "Tracked connections",
+   "description": "Number of connections in the kernel conntrack table (NAT and the stateful firewall both depend on it), against the table limit (shown in the legend only, not drawn, so the entries line isn't flattened). If entries reach the limit, new connections are dropped and `dmesg` shows `nf_conntrack: table full, dropping packet`.\n\nA sudden jump usually means one device opening huge numbers of connections (torrent client, malware, scan). To find it: `sudo conntrack -L | awk '{print $5}' | sort | uniq -c | sort -rn | head`.\n\nPer-CPU drop/insert_failed stats aren't available: this kernel doesn't expose `/proc/net/stat/nf_conntrack` (use `sudo conntrack -S` instead).",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 24,
+    "x": 0,
+    "y": 34
+   },
+   "targets": [
+    {
+     "expr": "node_nf_conntrack_entries",
+     "legendFormat": "entries",
+     "refId": "A"
+    },
+    {
+     "expr": "node_nf_conntrack_entries_limit",
+     "legendFormat": "limit",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "pointSize": 4,
+      "spanNulls": true,
+      "showPoints": "never"
+     },
+     "min": 0
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "limit"
+      },
+      "properties": [
+       {
+        "id": "custom.hideFrom",
+        "value": {
+         "legend": false,
+         "tooltip": false,
+         "viz": true
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  }
+ ],
+ "description": "wan/lan/wg0 traffic, NIC errors, CAKE shaping and conntrack. Hover the (i) icon on each panel for help."
+}
