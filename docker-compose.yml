@@ -29,6 +29,11 @@ services:
 #    depends_on:
       #      - cadvisor
 #      - pushgateway
+    # node-exporter runs on the host network now; keep its old name so the
+    # scrape target and the instance label in Grafana stay the same.
+    # 172.18.0.1 is the back-tier bridge gateway (the host).
+    extra_hosts:
+      - "node-exporter:172.18.0.1"
     networks:
       - back-tier
     restart: always
@@ -39,6 +44,11 @@ services:
 
   node-exporter:
     image: quay.io/prometheus/node-exporter:latest
+    # Host network + host PID so wan/lan, conntrack and per-process stats are
+    # the router's, not the container's. Port 9100 is then governed by UFW
+    # (LAN zones + the 172.18 Docker net, not wan), not a Docker publish that bypasses it.
+    network_mode: host
+    pid: host
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -48,12 +58,10 @@ services:
       - '--path.rootfs=/host'
       - '--path.procfs=/host/proc' 
       - '--path.sysfs=/host/sys'
-      - --collector.filesystem.ignored-mount-points
+      - '--web.listen-address=:9100'
+      - '--collector.netdev.device-exclude=^(veth.*|lo)$$'
+      - --collector.filesystem.mount-points-exclude
       - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
-    ports:
-      - 9100:9100
-    networks:
-      - back-tier
     restart: always
     deploy:
       mode: global
