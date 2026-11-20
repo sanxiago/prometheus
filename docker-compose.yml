@@ -43,7 +43,8 @@ services:
 #          - node.hostname == ${HOSTNAME}
 
   node-exporter:
-    image: quay.io/prometheus/node-exporter:latest
+    # Pinned: ':latest' was never re-pulled and sat on v1.5.0 (2022) for years.
+    image: quay.io/prometheus/node-exporter:v1.9.1
     # Host network + host PID so wan/lan, conntrack and per-process stats are
     # the router's, not the container's. Port 9100 is then governed by UFW
     # (LAN zones + the 172.18 Docker net, not wan), not a Docker publish that bypasses it.
@@ -60,6 +61,9 @@ services:
       - '--path.sysfs=/host/sys'
       - '--web.listen-address=:9100'
       - '--collector.netdev.device-exclude=^(veth.*|lo)$$'
+      # CAKE shaping stats (drops, backlog, overlimits) for the two shaped NICs only.
+      - '--collector.qdisc'
+      - '--collector.qdisc.device-include=^(wan|lan)$$'
       - --collector.filesystem.mount-points-exclude
       - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
     restart: always

@@ -20,3 +20,15 @@ groups:
     annotations:
       summary: "Instance {{ $labels.instance }} under high load"
       description: "{{ $labels.instance }} of job {{ $labels.job }} is under high load."
+
+  # Conntrack table filling up: new flows get dropped once it is full.
+  # (Per-CPU drop/early_drop stats aren't available: the kernel has no
+  # /proc/net/stat/nf_conntrack, CONFIG_NF_CONNTRACK_PROCFS is off.)
+  - alert: conntrack_table_filling
+    expr: node_nf_conntrack_entries / node_nf_conntrack_entries_limit > 0.8
+    for: 5m
+    labels:
+      severity: page
+    annotations:
+      summary: "Conntrack table {{ $value | humanizePercentage }} full on {{ $labels.instance }}"
+      description: "node_nf_conntrack_entries is above 80% of nf_conntrack_max; new connections will be dropped when it reaches 100%."
