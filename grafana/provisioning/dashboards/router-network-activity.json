@@ -420,7 +420,7 @@
    "id": 9,
    "type": "timeseries",
    "title": "NIC errors & drops",
-   "description": "Errors and drops counted by the network driver/kernel at the interface, **before** CAKE. Should be flat at zero.\n\n- `rx errs`: bad frames (CRC errors): suspect the cable, port or ONT/upstream router.\n- `rx drop`: kernel had no room for incoming packets (CPU busy, ring buffer too small).\n- `tx drop`/`tx errs`: rarely non-zero with CAKE in place; CAKE's own drops are in the panel below.",
+   "description": "Errors and drops counted by the network driver/kernel at the interface, **before** CAKE. Should be flat at zero.\n\n- `rx errs`: bad frames (CRC errors): suspect the cable, port or ONT/upstream router.\n- `rx drop`: frames the kernel discarded on arrival. **A steady ~1/s or less on `wan` is normal noise**: the GFiber router and other upstream devices broadcast protocols this router doesn't use (STP, IEEE 1905.1 mesh, LLDP, vendor ethertype 0x9104) and the kernel counts each one as dropped. Only sudden spikes matter (then check `ethtool -S wan` for ring/fifo overruns). Running `tcpdump` on the interface temporarily hides them.\n- `tx drop`/`tx errs`: rarely non-zero with CAKE in place; CAKE's own drops are in the panel below.",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 8,
