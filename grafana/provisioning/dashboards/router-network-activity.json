@@ -47,7 +47,7 @@
    "id": 2,
    "type": "stat",
    "title": "WAN download",
-   "description": "Current receive rate on `wan` (internet \u2192 router), 5-minute average. CAKE shapes `lan` egress at 900 Mbit/s, so sustained values near that mean the shaper is the bottleneck.",
+   "description": "Current receive rate on `wan` (internet \u2192 router), 5-minute average. CAKE shapes `lan` egress at 930 Mbit/s, so sustained values near that mean the shaper is the bottleneck.",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 4,
@@ -210,9 +210,9 @@
   },
   {
    "id": 5,
-   "type": "stat",
-   "title": "CAKE drops (24h)",
-   "description": "Packets CAKE dropped on `wan` + `lan` in the last 24 hours. A few drops are normal: that is the AQM keeping queues short under load. Hundreds per hour while idle would mean the shaper bandwidth is set too low.",
+   "type": "timeseries",
+   "title": "CAKE drops per hour",
+   "description": "Packets CAKE dropped on `wan` (uploads) and `lan` (downloads to clients), one bar per hour, stacked. Follows the dashboard time range. A few hundred to ~1000 an hour during heavy transfers is the AQM doing its job; steady drops while the link is idle would mean the shaper bandwidth is set too low. See the CAKE row below for per-second detail.",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 4,
@@ -220,53 +220,50 @@
     "x": 18,
     "y": 1
    },
+   "interval": "1h",
    "targets": [
     {
-     "expr": "sum(increase(node_qdisc_drops_total{device=~\"wan|lan\"}[24h]))",
-     "refId": "A",
-     "instant": true
+     "expr": "sum by (device) (increase(node_qdisc_drops_total{device=~\"wan|lan\"}[$__interval]))",
+     "legendFormat": "{{device}}",
+     "refId": "A"
     }
    ],
    "fieldConfig": {
     "defaults": {
      "unit": "short",
+     "decimals": 0,
+     "min": 0,
      "color": {
-      "mode": "thresholds"
+      "mode": "palette-classic"
      },
-     "thresholds": {
-      "mode": "absolute",
-      "steps": [
-       {
-        "color": "green",
-        "value": null
-       },
-       {
-        "color": "orange",
-        "value": 1000
-       },
-       {
-        "color": "red",
-        "value": 10000
-       }
-      ]
-     },
-     "decimals": 0
+     "custom": {
+      "drawStyle": "bars",
+      "fillOpacity": 80,
+      "lineWidth": 1,
+      "barAlignment": 0,
+      "showPoints": "never",
+      "stacking": {
+       "mode": "normal",
+       "group": "A"
+      },
+      "axisPlacement": "auto"
+     }
     },
     "overrides": []
    },
    "options": {
-    "reduceOptions": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "right",
+     "showLegend": true,
      "calcs": [
-      "lastNotNull"
-     ],
-     "fields": "",
-     "values": false
+      "sum"
+     ]
     },
-    "colorMode": "value",
-    "graphMode": "none",
-    "textMode": "auto",
-    "justifyMode": "auto",
-    "orientation": "auto"
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
    }
   },
   {
@@ -498,7 +495,7 @@
    "id": 11,
    "type": "timeseries",
    "title": "CAKE drops/s",
-   "description": "Packets CAKE deliberately dropped to keep latency low (AQM). Short bursts during big downloads or uploads are expected and healthy: that's CAKE preventing bufferbloat. Sustained drops with low throughput would mean the configured bandwidth is too low for the link.\n\nCAKE only shapes **outgoing** traffic: on `wan` that's uploads, on `lan` it's downloads to clients. Both are set to 900 Mbit/s. Counters reset when the qdisc is re-created (reboot, `tc qdisc replace`).",
+   "description": "Packets CAKE deliberately dropped to keep latency low (AQM). Short bursts during big downloads or uploads are expected and healthy: that's CAKE preventing bufferbloat. Sustained drops with low throughput would mean the configured bandwidth is too low for the link.\n\nCAKE only shapes **outgoing** traffic: on `wan` that's uploads, on `lan` it's downloads to clients. `wan` is set to 900 Mbit/s, `lan` to 930 Mbit/s (see `/usr/local/bin/router-shaping.sh`). Counters reset when the qdisc is re-created (reboot, `tc qdisc replace`).",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 9,
@@ -508,7 +505,7 @@
    },
    "targets": [
     {
-     "expr": "rate(node_qdisc_drops_total{device=~\"wan|lan\"}[5m])",
+     "expr": "sum by (device) (rate(node_qdisc_drops_total{device=~\"wan|lan\"}[5m]))",
      "legendFormat": "{{device}}",
      "refId": "A"
     }
@@ -548,7 +545,7 @@
    "id": 12,
    "type": "timeseries",
    "title": "CAKE overlimits/s",
-   "description": "How often a packet had to wait because sending it would exceed the shaper rate. This shows how hard CAKE is working, not a problem: high values just mean traffic was at the 900 Mbit/s limit and CAKE was pacing it. Near zero means the shaper isn't involved and the link itself sets the pace.\n\nCAKE only shapes **outgoing** traffic: on `wan` that's uploads, on `lan` it's downloads to clients. Both are set to 900 Mbit/s. Counters reset when the qdisc is re-created (reboot, `tc qdisc replace`).",
+   "description": "How often a packet had to wait because sending it would exceed the shaper rate. This shows how hard CAKE is working, not a problem: high values just mean traffic was at the shaper limit (900 Mbit/s `wan`, 930 `lan`) and CAKE was pacing it. Near zero means the shaper isn't involved and the link itself sets the pace.\n\nCAKE only shapes **outgoing** traffic: on `wan` that's uploads, on `lan` it's downloads to clients. `wan` is set to 900 Mbit/s, `lan` to 930 Mbit/s (see `/usr/local/bin/router-shaping.sh`). Counters reset when the qdisc is re-created (reboot, `tc qdisc replace`).",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 9,
@@ -598,7 +595,7 @@
    "id": 13,
    "type": "timeseries",
    "title": "CAKE queue backlog",
-   "description": "Bytes waiting in CAKE's queue at scrape time (sampled once per scrape, so short bursts can be missed). CAKE targets about 5 ms of queueing; at 900 Mbit/s that is roughly 560 KB. A backlog that stays high means latency is building up on that interface.\n\nCAKE only shapes **outgoing** traffic: on `wan` that's uploads, on `lan` it's downloads to clients. Both are set to 900 Mbit/s. Counters reset when the qdisc is re-created (reboot, `tc qdisc replace`).",
+   "description": "Bytes waiting in CAKE's queue at scrape time (sampled once per scrape, so short bursts can be missed). CAKE targets about 5 ms of queueing; at 900-930 Mbit/s that is roughly 560-580 KB. A backlog that stays high means latency is building up on that interface.\n\nCAKE only shapes **outgoing** traffic: on `wan` that's uploads, on `lan` it's downloads to clients. `wan` is set to 900 Mbit/s, `lan` to 930 Mbit/s (see `/usr/local/bin/router-shaping.sh`). Counters reset when the qdisc is re-created (reboot, `tc qdisc replace`).",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 9,
