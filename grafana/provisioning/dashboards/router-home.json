@@ -1,0 +1,1309 @@
+{
+ "annotations": {
+  "list": []
+ },
+ "editable": true,
+ "fiscalYearStartMonth": 0,
+ "graphTooltip": 1,
+ "id": null,
+ "liveNow": false,
+ "refresh": "1m",
+ "schemaVersion": 38,
+ "style": "dark",
+ "tags": [
+  "router",
+  "home"
+ ],
+ "time": {
+  "from": "now-24h",
+  "to": "now"
+ },
+ "timepicker": {},
+ "timezone": "",
+ "title": "Router Home",
+ "uid": "router-home",
+ "version": 1,
+ "templating": {
+  "list": []
+ },
+ "links": [
+  {
+   "title": "Network activity",
+   "type": "link",
+   "url": "/d/router-network-activity",
+   "icon": "dashboard"
+  },
+  {
+   "title": "Firewall counters",
+   "type": "link",
+   "url": "/d/iptables-firewall-counters",
+   "icon": "dashboard"
+  },
+  {
+   "title": "Smokeping",
+   "type": "link",
+   "url": "/d/smokeping-latency-loss",
+   "icon": "dashboard"
+  },
+  {
+   "title": "Node Exporter Full",
+   "type": "link",
+   "url": "/d/rYdddlPWk",
+   "icon": "dashboard"
+  }
+ ],
+ "panels": [
+  {
+   "id": 1,
+   "type": "stat",
+   "title": "Uptime",
+   "description": "Time since the router last booted.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 0,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "time() - node_boot_time_seconds",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 2,
+   "type": "stat",
+   "title": "Load (1m)",
+   "description": "1-minute load average. The router has 4 cores: under 2 is relaxed, 3.5+ for 10 minutes fires the `high_load` alert.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 3,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "node_load1",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "#EAB839",
+        "value": 2
+       },
+       {
+        "color": "red",
+        "value": 3.5
+       }
+      ]
+     },
+     "decimals": 2
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 3,
+   "type": "stat",
+   "title": "Memory used",
+   "description": "RAM in use, excluding reclaimable cache (1 - MemAvailable/MemTotal).",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 6,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "#EAB839",
+        "value": 0.8
+       },
+       {
+        "color": "red",
+        "value": 0.9
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "Disk / used",
+   "description": "Root filesystem usage.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 9,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "1 - node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "#EAB839",
+        "value": 0.8
+       },
+       {
+        "color": "red",
+        "value": 0.9
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 5,
+   "type": "stat",
+   "title": "CPU temp",
+   "description": "CPU package temperature (`x86_pkg_temp`).",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 12,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "node_thermal_zone_temp{type=\"x86_pkg_temp\"}",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "celsius",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "#EAB839",
+        "value": 70
+       },
+       {
+        "color": "red",
+        "value": 85
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 6,
+   "type": "stat",
+   "title": "Conntrack used",
+   "description": "Share of the connection-tracking table in use. New connections are dropped when it is full.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 15,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "node_nf_conntrack_entries / node_nf_conntrack_entries_limit",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "#EAB839",
+        "value": 0.7
+       },
+       {
+        "color": "red",
+        "value": 0.9
+       }
+      ]
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 7,
+   "type": "stat",
+   "title": "Internet latency",
+   "description": "Smokeping median round-trip to Cloudflare DNS (1.1.1.1). Normally ~7 ms on GFiber.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 18,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "smokeping_median_seconds{target=\"DNS/CloudflareDNS1\"}",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "#EAB839",
+        "value": 0.03
+       },
+       {
+        "color": "red",
+        "value": 0.1
+       }
+      ]
+     },
+     "decimals": 1,
+     "links": [
+      {
+       "title": "Smokeping Latency & Loss",
+       "url": "/d/smokeping-latency-loss"
+      }
+     ]
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 8,
+   "type": "stat",
+   "title": "Alerts firing",
+   "description": "Prometheus alerts currently firing (Alertmanager emails them).",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 3,
+    "x": 21,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "count(ALERTS{alertstate=\"firing\"}) or vector(0)",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 1
+       }
+      ]
+     },
+     "decimals": 0,
+     "links": [
+      {
+       "title": "Alertmanager",
+       "url": "http://192.168.2.254:9093"
+      }
+     ]
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 9,
+   "type": "timeseries",
+   "title": "Internet traffic",
+   "description": "Throughput on `wan`: **download above zero, upload below**. Each point is the peak 30-second rate in that step, so speed tests show at their real height at any zoom. Details: Router Network Activity.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 4
+   },
+   "targets": [
+    {
+     "expr": "max_over_time((rate(node_network_receive_bytes_total{device=\"wan\"}[30s]) * 8)[$__interval:15s])",
+     "legendFormat": "download",
+     "refId": "A"
+    },
+    {
+     "expr": "max_over_time((rate(node_network_transmit_bytes_total{device=\"wan\"}[30s]) * 8)[$__interval:15s])",
+     "legendFormat": "upload",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      }
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": "upload"
+      },
+      "properties": [
+       {
+        "id": "custom.transform",
+        "value": "negative-Y"
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "download"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "blue"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "upload"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "orange"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "showLegend": true,
+     "calcs": [
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   },
+   "interval": "15s"
+  },
+  {
+   "id": 10,
+   "type": "timeseries",
+   "title": "QoS: CAKE drops/min",
+   "description": "Packets CAKE dropped to keep latency low. `wan` = uploads (900 Mbit/s cap), `lan` = downloads to clients (930 Mbit/s cap). Bursts during big transfers are normal; drops while idle mean the cap is too low.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 6,
+    "x": 12,
+    "y": 4
+   },
+   "targets": [
+    {
+     "expr": "sum by (device) (rate(node_qdisc_drops_total{device=~\"wan|lan\"}[$__rate_interval])) * 60",
+     "legendFormat": "{{device}}",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      }
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "showLegend": true,
+     "calcs": [
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 11,
+   "type": "timeseries",
+   "title": "QoS: CAKE queue",
+   "description": "Bytes waiting in CAKE's queue. CAKE aims for ~5 ms of queue (~560 KB at 900 Mbit/s); a backlog that stays high means latency is building.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 6,
+    "x": 18,
+    "y": 4
+   },
+   "targets": [
+    {
+     "expr": "sum by (device) (node_qdisc_backlog{device=~\"wan|lan\"})",
+     "legendFormat": "{{device}}",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      }
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "showLegend": true,
+     "calcs": [
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 12,
+   "type": "timeseries",
+   "title": "Zone upload",
+   "description": "Upload per zone: bytes clients send out through the router (UFW `before-forward` ESTABLISHED rules per subnet). There's no per-zone **download** counter yet.\n\nIPv4 only; IPv6 traffic isn't counted per zone. `guest` (.5) has no counters. From the iptables exporter (scraped every 60s, so 3-minute rate).",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 12
+   },
+   "targets": [
+    {
+     "expr": "sum(rate(iptables_bytes{table=\"filter\",rule=~\".*before-forward_-s_192\\\\.168\\\\.2\\\\.0/24_.*ESTABLISHED.*\"}[3m])) * 8",
+     "legendFormat": "green",
+     "refId": "A"
+    },
+    {
+     "expr": "sum(rate(iptables_bytes{table=\"filter\",rule=~\".*before-forward_-s_192\\\\.168\\\\.3\\\\.0/24_.*ESTABLISHED.*\"}[3m])) * 8",
+     "legendFormat": "kids",
+     "refId": "B"
+    },
+    {
+     "expr": "sum(rate(iptables_bytes{table=\"filter\",rule=~\".*before-forward_-s_192\\\\.168\\\\.4\\\\.0/24_.*ESTABLISHED.*\"}[3m])) * 8",
+     "legendFormat": "smarthome",
+     "refId": "C"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      }
+     },
+     "min": 0
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "green"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "green"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "kids"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "blue"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "smarthome"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "purple"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "showLegend": true,
+     "calcs": [
+      "mean",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 13,
+   "type": "timeseries",
+   "title": "Zone new connections/s",
+   "description": "New outbound connections per zone (NAT `MASQUERADE` only sees the first packet of each connection). A good measure of how busy a zone is regardless of bandwidth.\n\nIPv4 only; IPv6 traffic isn't counted per zone. `guest` (.5) has no counters. From the iptables exporter (scraped every 60s, so 3-minute rate).",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 12
+   },
+   "targets": [
+    {
+     "expr": "sum(rate(iptables_packets{table=\"nat\",chain=\"POSTROUTING\",destination=\"MASQUERADE\",rule=~\"-s_192\\\\.168\\\\.2\\\\.0/24_.*\"}[3m]))",
+     "legendFormat": "green",
+     "refId": "A"
+    },
+    {
+     "expr": "sum(rate(iptables_packets{table=\"nat\",chain=\"POSTROUTING\",destination=\"MASQUERADE\",rule=~\"-s_192\\\\.168\\\\.3\\\\.0/24_.*\"}[3m]))",
+     "legendFormat": "kids",
+     "refId": "B"
+    },
+    {
+     "expr": "sum(rate(iptables_packets{table=\"nat\",chain=\"POSTROUTING\",destination=\"MASQUERADE\",rule=~\"-s_192\\\\.168\\\\.4\\\\.0/24_.*\"}[3m]))",
+     "legendFormat": "smarthome",
+     "refId": "C"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      }
+     },
+     "min": 0
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "green"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "green"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "kids"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "blue"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "smarthome"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "purple"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "showLegend": true,
+     "calcs": [
+      "mean",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 14,
+   "type": "timeseries",
+   "title": "Zone DNS lookups/s",
+   "description": "DNS queries per zone to dnsmasq (UDP/53 flows seen by the NAT table, so repeated queries on the same socket count once).\n\nIPv4 only; IPv6 traffic isn't counted per zone. `guest` (.5) has no counters. From the iptables exporter (scraped every 60s, so 3-minute rate).",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 12
+   },
+   "targets": [
+    {
+     "expr": "sum(rate(iptables_packets{table=\"nat\",chain=\"PREROUTING\",rule=~\"-s_192\\\\.168\\\\.2\\\\.0/24_-p_udp_.*--dport_53_\"}[3m]))",
+     "legendFormat": "green",
+     "refId": "A"
+    },
+    {
+     "expr": "sum(rate(iptables_packets{table=\"nat\",chain=\"PREROUTING\",rule=~\"-s_192\\\\.168\\\\.3\\\\.0/24_-p_udp_.*--dport_53_\"}[3m]))",
+     "legendFormat": "kids",
+     "refId": "B"
+    },
+    {
+     "expr": "sum(rate(iptables_packets{table=\"nat\",chain=\"PREROUTING\",rule=~\"-s_192\\\\.168\\\\.4\\\\.0/24_-p_udp_.*--dport_53_\"}[3m]))",
+     "legendFormat": "smarthome",
+     "refId": "C"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      }
+     },
+     "min": 0
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "green"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "green"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "kids"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "blue"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "smarthome"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "purple"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "showLegend": true,
+     "calcs": [
+      "mean",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 15,
+   "type": "timeseries",
+   "title": "Load average",
+   "description": "1/5/15-minute load averages. 4 cores: sustained values above 4 mean work is queueing.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 0,
+    "y": 20
+   },
+   "targets": [
+    {
+     "expr": "node_load1",
+     "legendFormat": "1m",
+     "refId": "A"
+    },
+    {
+     "expr": "node_load5",
+     "legendFormat": "5m",
+     "refId": "B"
+    },
+    {
+     "expr": "node_load15",
+     "legendFormat": "15m",
+     "refId": "C"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      }
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "showLegend": true,
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 16,
+   "type": "timeseries",
+   "title": "Memory",
+   "description": "RAM: used by programs vs available (free + reclaimable cache), stacked to the total.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 8,
+    "y": 20
+   },
+   "targets": [
+    {
+     "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes",
+     "legendFormat": "used",
+     "refId": "A"
+    },
+    {
+     "expr": "node_memory_MemAvailable_bytes",
+     "legendFormat": "available",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "normal",
+       "group": "A"
+      }
+     },
+     "min": 0
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "used"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "blue"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "available"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8F8F8F"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "showLegend": true,
+     "calcs": [
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 17,
+   "type": "timeseries",
+   "title": "Internet latency & first hop",
+   "description": "Smokeping median latency: Cloudflare and Google DNS (internet), and the GFiber gateway (the ISP's first hop). If the gateway rises too, the problem is the GFiber link, not the wider internet.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 8,
+    "x": 16,
+    "y": 20
+   },
+   "targets": [
+    {
+     "expr": "smokeping_median_seconds{target=~\"DNS/CloudflareDNS1|DNS/GoogleDNS1|Local/GFiberGateway\"}",
+     "legendFormat": "{{target}}",
+     "refId": "A"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "none",
+       "group": "A"
+      }
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "showLegend": true,
+     "calcs": [
+      "mean",
+      "max"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  }
+ ]
+}
