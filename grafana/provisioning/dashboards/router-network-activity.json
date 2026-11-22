@@ -555,7 +555,7 @@
    },
    "targets": [
     {
-     "expr": "rate(node_qdisc_overlimits_total{device=~\"wan|lan\"}[$__rate_interval])",
+     "expr": "sum by (device) (rate(node_qdisc_overlimits_total{device=~\"wan|lan\"}[$__rate_interval]))",
      "legendFormat": "{{device}}",
      "refId": "A"
     }
@@ -605,7 +605,7 @@
    },
    "targets": [
     {
-     "expr": "node_qdisc_backlog{device=~\"wan|lan\"}",
+     "expr": "sum by (device) (node_qdisc_backlog{device=~\"wan|lan\"})",
      "legendFormat": "{{device}}",
      "refId": "A"
     }
