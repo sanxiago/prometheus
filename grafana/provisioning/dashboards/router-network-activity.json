@@ -211,8 +211,8 @@
   {
    "id": 5,
    "type": "timeseries",
-   "title": "CAKE drops per hour",
-   "description": "Packets CAKE dropped on `wan` (uploads) and `lan` (downloads to clients), one bar per hour, stacked. Follows the dashboard time range. A few hundred to ~1000 an hour during heavy transfers is the AQM doing its job; steady drops while the link is idle would mean the shaper bandwidth is set too low. See the CAKE row below for per-second detail.",
+   "title": "CAKE drops/min",
+   "description": "Packets CAKE dropped per minute on `wan` (uploads) and `lan` (downloads to clients). Resolution follows the zoom: about 1-minute detail on short ranges, smoothed a little on 24h+. Bursts of drops during heavy transfers are the AQM doing its job; steady drops while the link is idle would mean the shaper bandwidth is set too low. See the CAKE row below for the larger view.",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 4,
@@ -220,10 +220,9 @@
     "x": 18,
     "y": 1
    },
-   "interval": "1h",
    "targets": [
     {
-     "expr": "sum by (device) (increase(node_qdisc_drops_total{device=~\"wan|lan\"}[$__interval]))",
+     "expr": "sum by (device) (rate(node_qdisc_drops_total{device=~\"wan|lan\"}[$__rate_interval])) * 60",
      "legendFormat": "{{device}}",
      "refId": "A"
     }
@@ -231,19 +230,18 @@
    "fieldConfig": {
     "defaults": {
      "unit": "short",
-     "decimals": 0,
      "min": 0,
      "color": {
       "mode": "palette-classic"
      },
      "custom": {
-      "drawStyle": "bars",
-      "fillOpacity": 80,
+      "drawStyle": "line",
       "lineWidth": 1,
-      "barAlignment": 0,
+      "fillOpacity": 20,
       "showPoints": "never",
+      "spanNulls": true,
       "stacking": {
-       "mode": "normal",
+       "mode": "none",
        "group": "A"
       },
       "axisPlacement": "auto"
@@ -257,7 +255,7 @@
      "placement": "right",
      "showLegend": true,
      "calcs": [
-      "sum"
+      "max"
      ]
     },
     "tooltip": {
@@ -494,7 +492,7 @@
   {
    "id": 11,
    "type": "timeseries",
-   "title": "CAKE drops/s",
+   "title": "CAKE drops/min",
    "description": "Packets CAKE deliberately dropped to keep latency low (AQM). Short bursts during big downloads or uploads are expected and healthy: that's CAKE preventing bufferbloat. Sustained drops with low throughput would mean the configured bandwidth is too low for the link.\n\nCAKE only shapes **outgoing** traffic: on `wan` that's uploads, on `lan` it's downloads to clients. `wan` is set to 900 Mbit/s, `lan` to 930 Mbit/s (see `/usr/local/bin/router-shaping.sh`). Counters reset when the qdisc is re-created (reboot, `tc qdisc replace`).",
    "datasource": "Prometheus",
    "gridPos": {
@@ -505,14 +503,14 @@
    },
    "targets": [
     {
-     "expr": "sum by (device) (rate(node_qdisc_drops_total{device=~\"wan|lan\"}[5m]))",
+     "expr": "sum by (device) (rate(node_qdisc_drops_total{device=~\"wan|lan\"}[$__rate_interval])) * 60",
      "legendFormat": "{{device}}",
      "refId": "A"
     }
    ],
    "fieldConfig": {
     "defaults": {
-     "unit": "pps",
+     "unit": "short",
      "custom": {
       "drawStyle": "line",
       "lineWidth": 1,
