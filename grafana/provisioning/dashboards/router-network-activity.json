@@ -47,7 +47,7 @@
    "id": 2,
    "type": "stat",
    "title": "WAN download",
-   "description": "Current receive rate on `wan` (internet \u2192 router), 5-minute average. CAKE shapes `lan` egress at 930 Mbit/s, so sustained values near that mean the shaper is the bottleneck.",
+   "description": "Current receive rate on `wan` (internet \u2192 router), 1-minute average. CAKE shapes `lan` egress at 930 Mbit/s, so sustained values near that mean the shaper is the bottleneck.",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 4,
@@ -57,7 +57,7 @@
    },
    "targets": [
     {
-     "expr": "rate(node_network_receive_bytes_total{device=\"wan\"}[5m]) * 8",
+     "expr": "rate(node_network_receive_bytes_total{device=\"wan\"}[1m]) * 8",
      "refId": "A",
      "instant": true
     }
@@ -99,7 +99,7 @@
    "id": 3,
    "type": "stat",
    "title": "WAN upload",
-   "description": "Current transmit rate on `wan` (router \u2192 internet), 5-minute average. CAKE shapes `wan` egress at 900 Mbit/s.",
+   "description": "Current transmit rate on `wan` (router \u2192 internet), 1-minute average. CAKE shapes `wan` egress at 900 Mbit/s.",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 4,
@@ -109,7 +109,7 @@
    },
    "targets": [
     {
-     "expr": "rate(node_network_transmit_bytes_total{device=\"wan\"}[5m]) * 8",
+     "expr": "rate(node_network_transmit_bytes_total{device=\"wan\"}[1m]) * 8",
      "refId": "A",
      "instant": true
     }
@@ -281,7 +281,7 @@
    "id": 7,
    "type": "timeseries",
    "title": "Throughput (bits/s)",
-   "description": "Traffic per interface, 5-minute rate. **Above zero = received, below zero = transmitted.**\n\n- `wan` receive = internet download, `wan` transmit = upload.\n- `lan` transmit = traffic to LAN clients (mostly downloads), `lan` receive = traffic from them.\n- `wg0` = WireGuard tunnel traffic (already included in `wan` once encrypted).\n\nEverything on one physical `lan` NIC: the four zones (green/kids/smarthome/guest) aren't split here.",
+   "description": "Traffic per interface. **Above zero = received, below zero = transmitted.**\n\n- `wan` receive = internet download, `wan` transmit = upload.\n- `lan` transmit = traffic to LAN clients (mostly downloads), `lan` receive = traffic from them.\n- `wg0` = WireGuard tunnel traffic (already included in `wan` once encrypted).\n\nEverything on one physical `lan` NIC: the four zones (green/kids/smarthome/guest) aren't split here.\n\nEach point is the **peak 30-second rate** within that step, so short bursts such as a speed test show at their real height at any zoom (a 5-minute average showed a 930 Mbit/s test as ~270).",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 9,
@@ -291,12 +291,12 @@
    },
    "targets": [
     {
-     "expr": "rate(node_network_receive_bytes_total{device=~\"wan|lan|wg0\"}[5m]) * 8",
+     "expr": "max_over_time((rate(node_network_receive_bytes_total{device=~\"wan|lan|wg0\"}[30s]) * 8)[$__interval:15s])",
      "legendFormat": "{{device}} rx",
      "refId": "A"
     },
     {
-     "expr": "rate(node_network_transmit_bytes_total{device=~\"wan|lan|wg0\"}[5m]) * 8",
+     "expr": "max_over_time((rate(node_network_transmit_bytes_total{device=~\"wan|lan|wg0\"}[30s]) * 8)[$__interval:15s])",
      "legendFormat": "{{device}} tx",
      "refId": "B"
     }
@@ -342,13 +342,14 @@
      "mode": "multi",
      "sort": "desc"
     }
-   }
+   },
+   "interval": "15s"
   },
   {
    "id": 8,
    "type": "timeseries",
    "title": "Packets/s",
-   "description": "Packet rate per interface, 5-minute rate. **Above zero = received, below zero = transmitted.**\n\nCompare with throughput: a packet spike without a matching byte spike means many small packets (DNS floods, scans, VoIP/gaming) rather than downloads.",
+   "description": "Packet rate per interface. **Above zero = received, below zero = transmitted.**\n\nCompare with throughput: a packet spike without a matching byte spike means many small packets (DNS floods, scans, VoIP/gaming) rather than downloads.\n\nEach point is the **peak 30-second rate** within that step, so short bursts such as a speed test show at their real height at any zoom.",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 9,
@@ -358,12 +359,12 @@
    },
    "targets": [
     {
-     "expr": "rate(node_network_receive_packets_total{device=~\"wan|lan|wg0\"}[5m])",
+     "expr": "max_over_time((rate(node_network_receive_packets_total{device=~\"wan|lan|wg0\"}[30s]))[$__interval:15s])",
      "legendFormat": "{{device}} rx",
      "refId": "A"
     },
     {
-     "expr": "rate(node_network_transmit_packets_total{device=~\"wan|lan|wg0\"}[5m])",
+     "expr": "max_over_time((rate(node_network_transmit_packets_total{device=~\"wan|lan|wg0\"}[30s]))[$__interval:15s])",
      "legendFormat": "{{device}} tx",
      "refId": "B"
     }
@@ -409,7 +410,8 @@
      "mode": "multi",
      "sort": "desc"
     }
-   }
+   },
+   "interval": "15s"
   },
   {
    "id": 9,
@@ -425,22 +427,22 @@
    },
    "targets": [
     {
-     "expr": "rate(node_network_receive_errs_total{device=~\"wan|lan|wg0\"}[5m])",
+     "expr": "rate(node_network_receive_errs_total{device=~\"wan|lan|wg0\"}[$__rate_interval])",
      "legendFormat": "{{device}} rx errs",
      "refId": "A"
     },
     {
-     "expr": "rate(node_network_receive_drop_total{device=~\"wan|lan|wg0\"}[5m])",
+     "expr": "rate(node_network_receive_drop_total{device=~\"wan|lan|wg0\"}[$__rate_interval])",
      "legendFormat": "{{device}} rx drop",
      "refId": "B"
     },
     {
-     "expr": "rate(node_network_transmit_errs_total{device=~\"wan|lan|wg0\"}[5m])",
+     "expr": "rate(node_network_transmit_errs_total{device=~\"wan|lan|wg0\"}[$__rate_interval])",
      "legendFormat": "{{device}} tx errs",
      "refId": "C"
     },
     {
-     "expr": "rate(node_network_transmit_drop_total{device=~\"wan|lan|wg0\"}[5m])",
+     "expr": "rate(node_network_transmit_drop_total{device=~\"wan|lan|wg0\"}[$__rate_interval])",
      "legendFormat": "{{device}} tx drop",
      "refId": "D"
     }
@@ -553,7 +555,7 @@
    },
    "targets": [
     {
-     "expr": "rate(node_qdisc_overlimits_total{device=~\"wan|lan\"}[5m])",
+     "expr": "rate(node_qdisc_overlimits_total{device=~\"wan|lan\"}[$__rate_interval])",
      "legendFormat": "{{device}}",
      "refId": "A"
     }
