@@ -28,6 +28,12 @@
  },
  "links": [
   {
+   "title": "LAN devices",
+   "type": "link",
+   "url": "/d/lan-devices",
+   "icon": "dashboard"
+  },
+  {
    "title": "Network activity",
    "type": "link",
    "url": "/d/router-network-activity",
@@ -758,30 +764,25 @@
   {
    "id": 12,
    "type": "timeseries",
-   "title": "Zone upload",
-   "description": "Upload per zone: bytes clients send out through the router (UFW `before-forward` ESTABLISHED rules per subnet). There's no per-zone **download** counter yet.\n\nIPv4 only; IPv6 traffic isn't counted per zone. `guest` (.5) has no counters. From the iptables exporter (scraped every 60s, so 3-minute rate).",
+   "title": "Zone traffic",
+   "description": "Traffic per zone on `lan`: **download above zero, upload below**. IPv4 and IPv6. Counted per device (MAC) by the nft `acct_lan` table and summed by the device's zone from dnsmasq (`hosts.conf`; devices not listed there get the zone of their DHCP lease, or `unknown`).\n\nIncludes traffic to the router itself (DNS, self-hosted apps) and between zones, not only internet. Scraped every 60s, so 3-minute rate.",
    "datasource": "Prometheus",
    "gridPos": {
     "h": 8,
-    "w": 8,
+    "w": 12,
     "x": 0,
     "y": 12
    },
    "targets": [
     {
-     "expr": "sum(rate(iptables_bytes{table=\"filter\",rule=~\".*before-forward_-s_192\\\\.168\\\\.2\\\\.0/24_.*ESTABLISHED.*\"}[3m])) * 8",
-     "legendFormat": "green",
+     "expr": "sum by (zone) (rate(lan_device_download_bytes_total{tracked!=\"n/a\"}[3m])) * 8",
+     "legendFormat": "{{zone}} down",
      "refId": "A"
     },
     {
-     "expr": "sum(rate(iptables_bytes{table=\"filter\",rule=~\".*before-forward_-s_192\\\\.168\\\\.3\\\\.0/24_.*ESTABLISHED.*\"}[3m])) * 8",
-     "legendFormat": "kids",
+     "expr": "sum by (zone) (rate(lan_device_upload_bytes_total{tracked!=\"n/a\"}[3m])) * 8",
+     "legendFormat": "{{zone}} up",
      "refId": "B"
-    },
-    {
-     "expr": "sum(rate(iptables_bytes{table=\"filter\",rule=~\".*before-forward_-s_192\\\\.168\\\\.4\\\\.0/24_.*ESTABLISHED.*\"}[3m])) * 8",
-     "legendFormat": "smarthome",
-     "refId": "C"
     }
    ],
    "fieldConfig": {
@@ -800,14 +801,25 @@
        "mode": "none",
        "group": "A"
       }
-     },
-     "min": 0
+     }
     },
     "overrides": [
      {
       "matcher": {
-       "id": "byName",
-       "options": "green"
+       "id": "byRegexp",
+       "options": ".* up"
+      },
+      "properties": [
+       {
+        "id": "custom.transform",
+        "value": "negative-Y"
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": "green .*"
       },
       "properties": [
        {
@@ -821,8 +833,8 @@
      },
      {
       "matcher": {
-       "id": "byName",
-       "options": "kids"
+       "id": "byRegexp",
+       "options": "kids .*"
       },
       "properties": [
        {
@@ -836,8 +848,8 @@
      },
      {
       "matcher": {
-       "id": "byName",
-       "options": "smarthome"
+       "id": "byRegexp",
+       "options": "smarthome .*"
       },
       "properties": [
        {
@@ -845,6 +857,51 @@
         "value": {
          "mode": "fixed",
          "fixedColor": "purple"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": "guest .*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "orange"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": "gfiber .*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#C0C0C0"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": "unknown .*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8F8F8F"
         }
        }
       ]
@@ -875,8 +932,8 @@
    "datasource": "Prometheus",
    "gridPos": {
     "h": 8,
-    "w": 8,
-    "x": 8,
+    "w": 6,
+    "x": 12,
     "y": 12
    },
    "targets": [
@@ -969,7 +1026,6 @@
      "placement": "bottom",
      "showLegend": true,
      "calcs": [
-      "mean",
       "max"
      ]
     },
@@ -987,8 +1043,8 @@
    "datasource": "Prometheus",
    "gridPos": {
     "h": 8,
-    "w": 8,
-    "x": 16,
+    "w": 6,
+    "x": 18,
     "y": 12
    },
    "targets": [
@@ -1081,7 +1137,6 @@
      "placement": "bottom",
      "showLegend": true,
      "calcs": [
-      "mean",
       "max"
      ]
     },
@@ -1094,6 +1149,537 @@
   {
    "id": 15,
    "type": "timeseries",
+   "title": "LAN download by device (stacked)",
+   "description": "Download of every device on `lan`, one colour per device, stacked: the top of the stack is the total sent to all LAN devices, and the dashed **Total** line is the same sum. IPv4 + IPv6, counted per MAC by the nft `acct_lan` table (includes traffic from the router itself and between zones). Click a legend entry to isolate a device. For upload, per-zone and per-device filters, open **LAN Devices**.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 10,
+    "w": 24,
+    "x": 0,
+    "y": 20
+   },
+   "interval": "1m",
+   "links": [
+    {
+     "title": "LAN Devices: filter by zone/device, upload",
+     "url": "/d/lan-devices"
+    }
+   ],
+   "targets": [
+    {
+     "expr": "sum by (name, mac) (rate(lan_device_download_bytes_total{tracked!=\"n/a\"}[3m])) * 8",
+     "legendFormat": "{{name}}",
+     "refId": "A"
+    },
+    {
+     "expr": "sum(rate(lan_device_download_bytes_total{tracked!=\"n/a\"}[3m])) * 8",
+     "legendFormat": "Total",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 70,
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "normal",
+       "group": "A"
+      }
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Total"
+      },
+      "properties": [
+       {
+        "id": "custom.stacking",
+        "value": {
+         "mode": "none",
+         "group": "A"
+        }
+       },
+       {
+        "id": "custom.fillOpacity",
+        "value": 0
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 2
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "text"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "showLegend": true,
+     "calcs": [
+      "mean",
+      "max"
+     ],
+     "sortBy": "Mean",
+     "sortDesc": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 16,
+   "type": "table",
+   "title": "Devices",
+   "description": "Every device seen on `lan` since the nft `acct_lan` table was loaded, busiest first (by download over the dashboard's time range). **Now** columns are 3-minute rates.\n\n**In hosts.conf**: `NOT LISTED` means the MAC isn't in any dnsmasq `dhcp-host` line. Its name then comes from its DHCP lease hostname, or its vendor (IEEE registry), or the raw MAC. Add it to `/etc/dnsmasq.d/hosts.conf` to name it and pin its zone. `randomized MAC` vendors are phones/laptops using a private Wi-Fi address.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 12,
+    "w": 20,
+    "x": 0,
+    "y": 30
+   },
+   "links": [
+    {
+     "title": "LAN Devices: stacked throughput, filter by zone/device",
+     "url": "/d/lan-devices"
+    }
+   ],
+   "targets": [
+    {
+     "expr": "sum by (name, zone, vendor, tracked, mac) (rate(lan_device_download_bytes_total{tracked!=\"n/a\"}[3m])) * 8",
+     "refId": "A",
+     "instant": true,
+     "format": "table"
+    },
+    {
+     "expr": "sum by (name, zone, vendor, tracked, mac) (rate(lan_device_upload_bytes_total{tracked!=\"n/a\"}[3m])) * 8",
+     "refId": "B",
+     "instant": true,
+     "format": "table"
+    },
+    {
+     "expr": "sum by (name, zone, vendor, tracked, mac) (increase(lan_device_download_bytes_total{tracked!=\"n/a\"}[$__range]))",
+     "refId": "C",
+     "instant": true,
+     "format": "table"
+    },
+    {
+     "expr": "sum by (name, zone, vendor, tracked, mac) (increase(lan_device_upload_bytes_total{tracked!=\"n/a\"}[$__range]))",
+     "refId": "D",
+     "instant": true,
+     "format": "table"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "Time": true
+      },
+      "indexByName": {
+       "name": 0,
+       "tracked": 1,
+       "zone": 2,
+       "Value #A": 3,
+       "Value #B": 4,
+       "Value #C": 5,
+       "Value #D": 6,
+       "vendor": 7,
+       "mac": 8
+      },
+      "renameByName": {
+       "name": "Device",
+       "tracked": "In hosts.conf",
+       "zone": "Zone",
+       "Value #A": "Down now",
+       "Value #B": "Up now",
+       "Value #C": "Down (range)",
+       "Value #D": "Up (range)",
+       "vendor": "Vendor",
+       "mac": "MAC"
+      }
+     }
+    },
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "Down (range)",
+        "desc": true
+       }
+      ]
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "auto",
+      "filterable": true,
+      "cellOptions": {
+       "type": "auto"
+      }
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Down now"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "bps"
+       },
+       {
+        "id": "decimals",
+        "value": 1
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Up now"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "bps"
+       },
+       {
+        "id": "decimals",
+        "value": 1
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Down (range)"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "bytes"
+       },
+       {
+        "id": "decimals",
+        "value": 1
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Up (range)"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "bytes"
+       },
+       {
+        "id": "decimals",
+        "value": 1
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "In hosts.conf"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "yes": {
+            "text": "yes",
+            "color": "green",
+            "index": 0
+           },
+           "no": {
+            "text": "NOT LISTED",
+            "color": "orange",
+            "index": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-text"
+        }
+       },
+       {
+        "id": "custom.width",
+        "value": 120
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Zone"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 100
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "MAC"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 150
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm",
+    "footer": {
+     "show": false
+    }
+   }
+  },
+  {
+   "id": 17,
+   "type": "stat",
+   "title": "Not in hosts.conf",
+   "description": "Devices active in the dashboard's time range whose MAC isn't in any dnsmasq `dhcp-host` line. See the Devices table (`NOT LISTED`) for their names, vendors and MACs.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 4,
+    "x": 20,
+    "y": 30
+   },
+   "targets": [
+    {
+     "expr": "count(increase(lan_device_upload_packets_total{tracked=\"no\"}[$__range]) > 0) or vector(0)",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 1
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 18,
+   "type": "stat",
+   "title": "Devices active",
+   "description": "Devices that sent or received traffic in the dashboard's time range.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 4,
+    "x": 20,
+    "y": 34
+   },
+   "targets": [
+    {
+     "expr": "count(increase(lan_device_upload_packets_total{tracked!=\"n/a\"}[$__range]) > 0) or vector(0)",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "text",
+        "value": null
+       }
+      ]
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 19,
+   "type": "stat",
+   "title": "Device accounting",
+   "description": "Whether the per-device counters are working: the nft `acct_lan` table is loaded and its minute-by-minute dump is fresh. It isn't loaded at boot yet; after a reboot run `sudo nft -f /root/router/lan_acct_exporter/acct_lan.nft`.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 4,
+    "x": 20,
+    "y": 38
+   },
+   "targets": [
+    {
+     "expr": "min(lan_acct_table_loaded * (lan_acct_dump_age_seconds < bool 180)) or vector(0)",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 1
+       }
+      ]
+     },
+     "decimals": 0,
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "0": {
+         "text": "NOT COUNTING",
+         "index": 0
+        },
+        "1": {
+         "text": "OK",
+         "index": 1
+        }
+       }
+      }
+     ]
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 20,
+   "type": "timeseries",
    "title": "Load average",
    "description": "1/5/15-minute load averages. 4 cores: sustained values above 4 mean work is queueing.",
    "datasource": "Prometheus",
@@ -1101,7 +1687,7 @@
     "h": 8,
     "w": 8,
     "x": 0,
-    "y": 20
+    "y": 42
    },
    "targets": [
     {
@@ -1159,7 +1745,7 @@
    }
   },
   {
-   "id": 16,
+   "id": 21,
    "type": "timeseries",
    "title": "Memory",
    "description": "RAM: used by programs vs available (free + reclaimable cache), stacked to the total.",
@@ -1168,7 +1754,7 @@
     "h": 8,
     "w": 8,
     "x": 8,
-    "y": 20
+    "y": 42
    },
    "targets": [
     {
@@ -1250,7 +1836,7 @@
    }
   },
   {
-   "id": 17,
+   "id": 22,
    "type": "timeseries",
    "title": "Internet latency & first hop",
    "description": "Smokeping median latency: Cloudflare and Google DNS (internet), and the GFiber gateway (the ISP's first hop). If the gateway rises too, the problem is the GFiber link, not the wider internet.",
@@ -1259,7 +1845,7 @@
     "h": 8,
     "w": 8,
     "x": 16,
-    "y": 20
+    "y": 42
    },
    "targets": [
     {

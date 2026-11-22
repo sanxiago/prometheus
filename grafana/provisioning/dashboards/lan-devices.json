@@ -1,0 +1,1196 @@
+{
+ "annotations": {
+  "list": []
+ },
+ "editable": true,
+ "fiscalYearStartMonth": 0,
+ "graphTooltip": 1,
+ "id": null,
+ "liveNow": false,
+ "refresh": "1m",
+ "schemaVersion": 38,
+ "style": "dark",
+ "tags": [
+  "router",
+  "devices",
+  "lan"
+ ],
+ "time": {
+  "from": "now-6h",
+  "to": "now"
+ },
+ "timepicker": {},
+ "timezone": "",
+ "title": "LAN Devices",
+ "uid": "lan-devices",
+ "version": 1,
+ "templating": {
+  "list": [
+   {
+    "name": "zone",
+    "label": "Zone",
+    "type": "query",
+    "datasource": "Prometheus",
+    "query": {
+     "query": "label_values(lan_device_info, zone)",
+     "refId": "zone-var"
+    },
+    "definition": "label_values(lan_device_info, zone)",
+    "refresh": 2,
+    "multi": true,
+    "includeAll": true,
+    "allValue": ".*",
+    "current": {
+     "selected": true,
+     "text": [
+      "All"
+     ],
+     "value": [
+      "$__all"
+     ]
+    },
+    "sort": 1,
+    "hide": 0,
+    "options": [],
+    "regex": ""
+   },
+   {
+    "name": "tracked",
+    "label": "In hosts.conf",
+    "type": "query",
+    "datasource": "Prometheus",
+    "query": {
+     "query": "label_values(lan_device_info, tracked)",
+     "refId": "tracked-var"
+    },
+    "definition": "label_values(lan_device_info, tracked)",
+    "refresh": 2,
+    "multi": true,
+    "includeAll": true,
+    "allValue": ".*",
+    "current": {
+     "selected": true,
+     "text": [
+      "All"
+     ],
+     "value": [
+      "$__all"
+     ]
+    },
+    "sort": 1,
+    "hide": 0,
+    "options": [],
+    "regex": ""
+   },
+   {
+    "name": "device",
+    "label": "Device",
+    "type": "query",
+    "datasource": "Prometheus",
+    "query": {
+     "query": "label_values(lan_device_info{zone=~\"$zone\", tracked=~\"$tracked\"}, name)",
+     "refId": "device-var"
+    },
+    "definition": "label_values(lan_device_info{zone=~\"$zone\", tracked=~\"$tracked\"}, name)",
+    "refresh": 2,
+    "multi": true,
+    "includeAll": true,
+    "allValue": ".*",
+    "current": {
+     "selected": true,
+     "text": [
+      "All"
+     ],
+     "value": [
+      "$__all"
+     ]
+    },
+    "sort": 1,
+    "hide": 0,
+    "options": [],
+    "regex": ""
+   }
+  ]
+ },
+ "links": [
+  {
+   "title": "Router Home",
+   "type": "link",
+   "url": "/d/router-home",
+   "icon": "dashboard"
+  },
+  {
+   "title": "Network activity",
+   "type": "link",
+   "url": "/d/router-network-activity",
+   "icon": "dashboard"
+  }
+ ],
+ "panels": [
+  {
+   "id": 1,
+   "type": "stat",
+   "title": "Download now",
+   "description": "Total download of the selected devices, 3-minute rate. Follows the Zone / Device / In hosts.conf filters at the top.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 5,
+    "x": 0,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "sum(rate(lan_device_download_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8 or vector(0)",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "decimals": 1,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 2,
+   "type": "stat",
+   "title": "Upload now",
+   "description": "Total upload of the selected devices, 3-minute rate. Follows the Zone / Device / In hosts.conf filters at the top.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 5,
+    "x": 5,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "sum(rate(lan_device_upload_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8 or vector(0)",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "decimals": 1,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 3,
+   "type": "stat",
+   "title": "Downloaded (range)",
+   "description": "Bytes downloaded by the selected devices over the dashboard's time range. Follows the Zone / Device / In hosts.conf filters at the top.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 5,
+    "x": 10,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "sum(increase(lan_device_download_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[$__range])) or vector(0)",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "decimals": 1,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "Uploaded (range)",
+   "description": "Bytes uploaded by the selected devices over the dashboard's time range. Follows the Zone / Device / In hosts.conf filters at the top.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 5,
+    "x": 15,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "sum(increase(lan_device_upload_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[$__range])) or vector(0)",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bytes",
+     "decimals": 1,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 5,
+   "type": "stat",
+   "title": "Devices selected",
+   "description": "Devices matching the filters that had traffic in the time range.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 4,
+    "w": 4,
+    "x": 20,
+    "y": 0
+   },
+   "targets": [
+    {
+     "expr": "count(sum by (mac) (increase(lan_device_upload_packets_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[$__range])) > 0) or vector(0)",
+     "refId": "A",
+     "instant": true
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "decimals": 0,
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   }
+  },
+  {
+   "id": 6,
+   "type": "timeseries",
+   "title": "Download by device",
+   "description": "Bytes the router sent to each device.\n\nEach colour is one device, stacked, so the top of the stack is the total for the selection; the dashed **Total** line is the same sum. Counted per MAC on `lan` by the nft `acct_lan` table (IPv4 + IPv6, includes traffic to the router itself and between zones). Click a legend entry to show only that device, Ctrl/Cmd-click to add more. Follows the Zone / Device / In hosts.conf filters at the top.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 11,
+    "w": 24,
+    "x": 0,
+    "y": 4
+   },
+   "interval": "1m",
+   "targets": [
+    {
+     "expr": "sum by (name, mac) (rate(lan_device_download_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8",
+     "legendFormat": "{{name}}",
+     "refId": "A"
+    },
+    {
+     "expr": "sum(rate(lan_device_download_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8",
+     "legendFormat": "Total",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 70,
+      "gradientMode": "none",
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "normal",
+       "group": "A"
+      }
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Total"
+      },
+      "properties": [
+       {
+        "id": "custom.stacking",
+        "value": {
+         "mode": "none",
+         "group": "A"
+        }
+       },
+       {
+        "id": "custom.fillOpacity",
+        "value": 0
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 2
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "text"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "showLegend": true,
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ],
+     "sortBy": "Mean",
+     "sortDesc": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 7,
+   "type": "timeseries",
+   "title": "Upload by device",
+   "description": "Bytes each device sent into the router.\n\nEach colour is one device, stacked, so the top of the stack is the total for the selection; the dashed **Total** line is the same sum. Counted per MAC on `lan` by the nft `acct_lan` table (IPv4 + IPv6, includes traffic to the router itself and between zones). Click a legend entry to show only that device, Ctrl/Cmd-click to add more. Follows the Zone / Device / In hosts.conf filters at the top.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 11,
+    "w": 24,
+    "x": 0,
+    "y": 15
+   },
+   "interval": "1m",
+   "targets": [
+    {
+     "expr": "sum by (name, mac) (rate(lan_device_upload_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8",
+     "legendFormat": "{{name}}",
+     "refId": "A"
+    },
+    {
+     "expr": "sum(rate(lan_device_upload_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8",
+     "legendFormat": "Total",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 70,
+      "gradientMode": "none",
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "normal",
+       "group": "A"
+      }
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Total"
+      },
+      "properties": [
+       {
+        "id": "custom.stacking",
+        "value": {
+         "mode": "none",
+         "group": "A"
+        }
+       },
+       {
+        "id": "custom.fillOpacity",
+        "value": 0
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 2
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "text"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "showLegend": true,
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ],
+     "sortBy": "Mean",
+     "sortDesc": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 8,
+   "type": "timeseries",
+   "title": "Download by zone",
+   "description": "Download stacked by zone (zone from `hosts.conf`, else the DHCP lease subnet). Follows the Zone / Device / In hosts.conf filters at the top.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 26
+   },
+   "interval": "1m",
+   "targets": [
+    {
+     "expr": "sum by (zone) (rate(lan_device_download_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8",
+     "legendFormat": "{{zone}}",
+     "refId": "A"
+    },
+    {
+     "expr": "sum(rate(lan_device_download_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8",
+     "legendFormat": "Total",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 70,
+      "gradientMode": "none",
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "normal",
+       "group": "A"
+      }
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Total"
+      },
+      "properties": [
+       {
+        "id": "custom.stacking",
+        "value": {
+         "mode": "none",
+         "group": "A"
+        }
+       },
+       {
+        "id": "custom.fillOpacity",
+        "value": 0
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 2
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "text"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "green"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "green"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "kids"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "blue"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "smarthome"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "purple"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "guest"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "orange"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "gfiber"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#C0C0C0"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "unknown"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8F8F8F"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "showLegend": true,
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ],
+     "sortBy": "Mean",
+     "sortDesc": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 9,
+   "type": "timeseries",
+   "title": "Upload by zone",
+   "description": "Upload stacked by zone. Follows the Zone / Device / In hosts.conf filters at the top.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 8,
+    "w": 12,
+    "x": 12,
+    "y": 26
+   },
+   "interval": "1m",
+   "targets": [
+    {
+     "expr": "sum by (zone) (rate(lan_device_upload_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8",
+     "legendFormat": "{{zone}}",
+     "refId": "A"
+    },
+    {
+     "expr": "sum(rate(lan_device_upload_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8",
+     "legendFormat": "Total",
+     "refId": "B"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "min": 0,
+     "color": {
+      "mode": "palette-classic"
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 70,
+      "gradientMode": "none",
+      "showPoints": "never",
+      "spanNulls": true,
+      "stacking": {
+       "mode": "normal",
+       "group": "A"
+      }
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Total"
+      },
+      "properties": [
+       {
+        "id": "custom.stacking",
+        "value": {
+         "mode": "none",
+         "group": "A"
+        }
+       },
+       {
+        "id": "custom.fillOpacity",
+        "value": 0
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 2
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "text"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "green"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "green"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "kids"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "blue"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "smarthome"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "purple"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "guest"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "orange"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "gfiber"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#C0C0C0"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "unknown"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#8F8F8F"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "right",
+     "showLegend": true,
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ],
+     "sortBy": "Mean",
+     "sortDesc": true
+    },
+    "tooltip": {
+     "mode": "multi",
+     "sort": "desc"
+    }
+   }
+  },
+  {
+   "id": 10,
+   "type": "table",
+   "title": "Devices",
+   "description": "The selected devices, busiest first by download over the time range. `NOT LISTED` = MAC isn't in `/etc/dnsmasq.d/hosts.conf`; its name comes from the DHCP lease hostname, the vendor, or the raw MAC.",
+   "datasource": "Prometheus",
+   "gridPos": {
+    "h": 12,
+    "w": 24,
+    "x": 0,
+    "y": 34
+   },
+   "targets": [
+    {
+     "expr": "sum by (name, zone, vendor, tracked, mac) (rate(lan_device_download_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8",
+     "refId": "A",
+     "instant": true,
+     "format": "table"
+    },
+    {
+     "expr": "sum by (name, zone, vendor, tracked, mac) (rate(lan_device_upload_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[3m])) * 8",
+     "refId": "B",
+     "instant": true,
+     "format": "table"
+    },
+    {
+     "expr": "sum by (name, zone, vendor, tracked, mac) (increase(lan_device_download_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[$__range]))",
+     "refId": "C",
+     "instant": true,
+     "format": "table"
+    },
+    {
+     "expr": "sum by (name, zone, vendor, tracked, mac) (increase(lan_device_upload_bytes_total{tracked!=\"n/a\", zone=~\"$zone\", name=~\"$device\", tracked=~\"$tracked\"}[$__range]))",
+     "refId": "D",
+     "instant": true,
+     "format": "table"
+    }
+   ],
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "Time": true
+      },
+      "indexByName": {
+       "name": 0,
+       "tracked": 1,
+       "zone": 2,
+       "Value #A": 3,
+       "Value #B": 4,
+       "Value #C": 5,
+       "Value #D": 6,
+       "vendor": 7,
+       "mac": 8
+      },
+      "renameByName": {
+       "name": "Device",
+       "tracked": "In hosts.conf",
+       "zone": "Zone",
+       "Value #A": "Down now",
+       "Value #B": "Up now",
+       "Value #C": "Down (range)",
+       "Value #D": "Up (range)",
+       "vendor": "Vendor",
+       "mac": "MAC"
+      }
+     }
+    },
+    {
+     "id": "sortBy",
+     "options": {
+      "sort": [
+       {
+        "field": "Down (range)",
+        "desc": true
+       }
+      ]
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "auto",
+      "filterable": true,
+      "cellOptions": {
+       "type": "auto"
+      }
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Down now"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "bps"
+       },
+       {
+        "id": "decimals",
+        "value": 1
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Up now"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "bps"
+       },
+       {
+        "id": "decimals",
+        "value": 1
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Down (range)"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "bytes"
+       },
+       {
+        "id": "decimals",
+        "value": 1
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Up (range)"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "bytes"
+       },
+       {
+        "id": "decimals",
+        "value": 1
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "In hosts.conf"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "yes": {
+            "text": "yes",
+            "color": "green",
+            "index": 0
+           },
+           "no": {
+            "text": "NOT LISTED",
+            "color": "orange",
+            "index": 1
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-text"
+        }
+       },
+       {
+        "id": "custom.width",
+        "value": 120
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "Zone"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 100
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "MAC"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 150
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm",
+    "footer": {
+     "show": false
+    }
+   }
+  }
+ ]
+}

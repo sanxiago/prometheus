@@ -55,3 +55,9 @@ scrape_configs:
 
     static_configs:
       - targets: ['smokeping_exporter:8018']
+
+  - job_name: 'lan-acct-exporter'
+    scrape_interval: 60s
+
+    static_configs:
+      - targets: ['lan_acct_exporter:8019']

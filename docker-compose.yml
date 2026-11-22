@@ -138,6 +138,20 @@ services:
       - back-tier
     restart: always
 
+  # Per-device lan traffic from the nft netdev acct_lan table (see
+  # /root/router/lan_acct_exporter). No published port: Prometheus reaches it
+  # on back-tier, and Docker-published ports bypass UFW.
+  lan_acct_exporter:
+    image: sanxiago/lan-acct-exporter
+    build: /root/router/lan_acct_exporter
+    volumes:
+      - /var/lib/lan-acct:/data:ro
+      - /etc/dnsmasq.d:/dnsmasq.d:ro
+      - /var/lib/misc:/leases:ro
+    networks:
+      - back-tier
+    restart: always
+
 #  pushgateway:
 #    image: prom/pushgateway
 #    restart: always
